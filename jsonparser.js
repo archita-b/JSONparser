@@ -17,5 +17,10 @@ return null;
 // console.log(booleanParser('abcdtrue'));
 
 const numParser = input => {
-  const result = input.match()
+  const result = input.match(/^-?([1-9]\d*|0)(\.\d+)?([Ee][+-]?\d+)?/);
+  if (result) {
+    return [result[0], input.slice(result[0].length)];
+  }
+  return null;
 }
+//console.log(numParser('1e-3'));
