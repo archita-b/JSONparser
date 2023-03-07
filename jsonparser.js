@@ -1,3 +1,5 @@
+const fs = require("fs");
+
 const nullParser = input => {
   if (!input.startsWith('null')) return null
   return [null, input.slice(4)]
@@ -31,13 +33,12 @@ const stringParser = input => {
   input = input.slice(1);
   let result = '';
   while (input[0] !== '"') {
-    if (input[0] === "\\" && input[1] !== "u") {
-      result += input[0];
-      input = input.slice(2);
-    // } else if (input[0] === "\\" && input[1] === '"') {
-    //   result += input[0];
-    //   input = input.slice(2);
-    // 
+    if (input[0] === "\\") {
+      let sChar = specialCharParser(input);
+      if (sChar !== null) {
+        result += sChar[0];
+        input = sChar[1];
+      }
     } else {
       result += input[0];
       input = input.slice(1);
@@ -45,4 +46,23 @@ const stringParser = input => {
   }
   return [String(result),input.slice(1)];
   }
-console.log(stringParser('"hi\b\"t\"s1"2ddfdg'));
+
+const specialCharParser = input => {
+  if (input[1] === "r") {
+    return ["\r", input.slice(2)];
+  }
+  if (input[1] === '"') {
+    return ['"', input.slice(2)];
+  }
+  if (input[1] === "u") {
+    let hex = input.slice(2,6);
+    if (hex.match(/[\u0000-\u001F]/)) {
+      return null;
+    }
+    let char = String.fromCharCode(parseInt(hex, 16));
+    console.log(char);
+    return [char, input.slice(2,6)];
+  }
+}
+let str = fs.readFileSync("data.json","utf8");
+console.log(stringParser(str));
