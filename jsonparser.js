@@ -33,14 +33,22 @@ const stringParser = input => {
   input = input.slice(1);
   let result = '';
   while (input[0] !== '"') {
+    console.log('result:',result)
+    if(result === undefined) {
+     
+      break
+    }
     if (input[0] === "\\") {
       let sChar = specialCharParser(input);
       if (sChar !== null) {
         result += sChar[0];
         input = sChar[1];
+        console.log(sChar[0], sChar[1]);
       }
-      return null;
-    } else {
+      result = result;
+      input = input.slice(6);
+    }
+    else {
       result += input[0];
       input = input.slice(1);
     }
@@ -49,6 +57,7 @@ const stringParser = input => {
   }
 
 const specialCharParser = input => {
+  // console.log('hi')
   if (input[1] === "\\") {
     return ['\\', input.slice(2)];
   }
@@ -74,21 +83,28 @@ const specialCharParser = input => {
     return ['"', input.slice(2)];
   }
   if (input[1] === "u") {
+    // console.log('u:',input[1])
    
   let hex = input.slice(2,6);
+  // console.log('hex:', hex)
   if (!hex.match(/[0-9A-Fa-f]{4}/)) {
     return null;
   }
-  // if (parseInt(hex, 16) >= 0 && parseInt(hex, 16) <= 31) {
-  //   console.log((parseInt(hex, 16)));
-  //   return null;
-  // }
+
+  if (parseInt(hex, 16) >= 0 && parseInt(hex, 16) <= 31) {
+    // console.log((parseInt(hex, 16)));
+    return null;
+  }
+
   let char = String.fromCharCode(parseInt(hex, 16));
+  // console.log('char:', char)
     return [char, input.slice(6)];
   }
 }
+
 let str = fs.readFileSync("data.json","utf8");
 console.log(stringParser(str));
+console.log('Json.parse:', JSON.parse(str));
 
 //  console.log(stringParser(str)[0],stringParser(str)[0].length);
  
