@@ -33,20 +33,15 @@ const stringParser = input => {
   input = input.slice(1);
   let result = '';
   while (input[0] !== '"') {
-    console.log('result:',result)
-    if(result === undefined) {
-     
-      break
-    }
     if (input[0] === "\\") {
       let sChar = specialCharParser(input);
-      if (sChar !== null) {
+      if (sChar[0] !== null) {
         result += sChar[0];
         input = sChar[1];
-        console.log(sChar[0], sChar[1]);
+        // console.log(sChar[0], sChar[1]);
       }
       result = result;
-      input = input.slice(6);
+      input = sChar[1];
     }
     else {
       result += input[0];
@@ -83,21 +78,16 @@ const specialCharParser = input => {
     return ['"', input.slice(2)];
   }
   if (input[1] === "u") {
-    // console.log('u:',input[1])
-   
   let hex = input.slice(2,6);
-  // console.log('hex:', hex)
   if (!hex.match(/[0-9A-Fa-f]{4}/)) {
     return null;
   }
-
   if (parseInt(hex, 16) >= 0 && parseInt(hex, 16) <= 31) {
-    // console.log((parseInt(hex, 16)));
-    return null;
+    // console.log(input.slice(6));
+    return [null, input.slice(6)];
   }
 
   let char = String.fromCharCode(parseInt(hex, 16));
-  // console.log('char:', char)
     return [char, input.slice(6)];
   }
 }
