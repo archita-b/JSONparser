@@ -38,7 +38,6 @@ const stringParser = input => {
       if (sChar[0] !== null) {
         result += sChar[0];
         input = sChar[1];
-        // console.log(sChar[0], sChar[1]);
       }
       result = result;
       input = sChar[1];
@@ -52,38 +51,39 @@ const stringParser = input => {
   }
 
 const specialCharParser = input => {
-  // console.log('hi')
-  if (input[1] === "\\") {
-    return ['\\', input.slice(2)];
-  }
-  if (input[1] === "\/") {
-    return ['\/', input.slice(2)];
-  }
-  if (input[1] === "b") {
-    return ['\b', input.slice(2)];
-  }
-  if (input[1] === "f") {
-    return ['\f', input.slice(2)];
-  }
-  if (input[1] === "n") {
-    return ['\n', input.slice(2)];
-  }
-  if (input[1] === "t") {
-    return ['\t', input.slice(2)];
-  }
-  if (input[1] === "r") {
-    return ['\r', input.slice(2)];
-  }
-  if (input[1] === '"') {
-    return ['"', input.slice(2)];
-  }
+  switch (input[1]) {
+    case "\\":
+        return ['\\', input.slice(2)];
+        break;
+    case "\/":
+        return ['\/', input.slice(2)];
+        break;
+    case "b":
+        return ['\b', input.slice(2)];
+        break;
+    case "f":
+        return ['\f', input.slice(2)];
+        break;
+    case "n":
+        return ['\n', input.slice(2)];
+        break;
+    case "t":
+        return ['\t', input.slice(2)];
+        break;
+    case "r":
+        return ['\r', input.slice(2)];
+        break;
+    case '"':
+        return ['"', input.slice(2)];
+        break;
+}
+
   if (input[1] === "u") {
   let hex = input.slice(2,6);
   if (!hex.match(/[0-9A-Fa-f]{4}/)) {
     return null;
   }
   if (parseInt(hex, 16) >= 0 && parseInt(hex, 16) <= 31) {
-    // console.log(input.slice(6));
     return [null, input.slice(6)];
   }
 
@@ -93,20 +93,27 @@ const specialCharParser = input => {
 }
 
 let str = fs.readFileSync("data.json","utf8");
-console.log(stringParser(str));
-console.log('Json.parse:', JSON.parse(str));
+// console.log(stringParser(str)[0]);
+// console.log('Json.parse:', JSON.parse(str));
 
-//  console.log(stringParser(str)[0],stringParser(str)[0].length);
+const valueParser = input => {
+  return (nullParser(input) || booleanParser(input) || numParser(input) || stringParser(input)); 
+}
+// console.log(valueParser(str));
  
 
-// const arrayParser = input => {
-//   if (!input.startsWith("[")) {
-//     return null;
-//   }
-//   let result = [];
-//   input = input.slice(1);
-//   while (input[0] !== ']') {
-
-//   }
-// }
-// console.log(arrayParser('a[1,2]'));
+const arrayParser = input => {
+  if (!input.startsWith("[")) {
+    return null;
+  }
+  let result = [];
+  input = input.slice(1);
+  if (input[0] == ']') {
+    return [result, input.slice(1)];
+  }
+  let parsedValue = valueParser(input[0]);
+  if (parsedValue === null) {
+    
+  }
+}
+// console.log(arrayParser('[]abcd'));
