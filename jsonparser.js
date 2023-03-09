@@ -21,6 +21,7 @@ return null;
 const numParser = input => {
   const result = input.match(/^-?([1-9]\d*|0)(\.\d+)?([Ee][+-]?\d+)?/);
   if (result) {
+    console.log(result,input,input.slice(result[0].length))
     return [Number(result[0]), input.slice(result[0].length)];
   }
   return null;
@@ -103,17 +104,35 @@ const valueParser = input => {
  
 
 const arrayParser = input => {
+  let result = [];
   if (!input.startsWith("[")) {
     return null;
   }
-  let result = [];
   input = input.slice(1);
   if (input[0] == ']') {
     return [result, input.slice(1)];
   }
-  let parsedValue = valueParser(input[0]);
-  if (parsedValue === null) {
-    
+  // console.log(result);
+  while (input[0]) {
+    // console.log(input[0]);
+    let parsedValue = valueParser(input);
+    // console.log(parsedValue);
+    if (parsedValue === null) {
+      return null;
+    }
+    // console.log(result);
+    result.push(parsedValue[0]);
+    console.log(parsedValue[1],parsedValue[0]);
+    input = parsedValue[1];
+    // console.log(input);
+    if (input[0] === ']') {
+      return [result, input.slice(1)];
+    }
+    if (input[0] !== ',') {
+      return null;
+    }
+    input = input.slice(1);
+    }
   }
-}
-// console.log(arrayParser('[]abcd'));
+console.log(arrayParser('[1,2]abcd'));
+// console.log('Json.parse:', JSON.parse(str));
