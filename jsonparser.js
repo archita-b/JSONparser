@@ -12,9 +12,9 @@ const booleanParser = input => {
     return [true, input.slice(4)];
   }
   if (input.startsWith('false')) {
-   return [false, input.slice(5)];
+    return [false, input.slice(5)];
   }
-return null;
+  return null;
 }
 // console.log(booleanParser('abcdtrue'));
 
@@ -35,96 +35,138 @@ const stringParser = input => {
   while (input[0] !== '"') {
     if (input[0] === "\\") {
       let sChar = specialCharParser(input);
-      if (sChar[0] !== null) {
+      if (sChar !== null) {
         result += sChar[0];
         input = sChar[1];
-      }
-      result = result;
-      input = sChar[1];
-    }
-    else {
+      } else return null;
+    } else {
       result += input[0];
       input = input.slice(1);
     }
   }
-  return [String(result),input.slice(1)];
-  }
+  return [result, input.slice(1)];
+}
 
 const specialCharParser = input => {
-  switch (input[1]) {
+  let escChar = input[1];
+  let sChar = '';
+  switch (escChar) {
     case "\\":
-        return ['\\', input.slice(2)];
-        break;
+      sChar = '\\';
+      break;
     case "\/":
-        return ['\/', input.slice(2)];
-        break;
+      sChar = '\/';
+      break;
     case "b":
-        return ['\b', input.slice(2)];
-        break;
+      sChar = '\b';
+      break;
     case "f":
-        return ['\f', input.slice(2)];
-        break;
+      sChar = '\f';
+      break;
     case "n":
-        return ['\n', input.slice(2)];
-        break;
+      sChar = '\n';
+      break;
     case "t":
-        return ['\t', input.slice(2)];
-        break;
+      sChar = '\t';
+      break;
     case "r":
-        return ['\r', input.slice(2)];
-        break;
+      sChar = '\r';
+      break;
     case '"':
-        return ['"', input.slice(2)];
+      sChar = '"';
+      break;
+    case "u":
+      let hex = input.slice(2, 6);
+      if (!hex.match(/[0-9A-Fa-f]{4}/)) {
         break;
+      }
+      if (parseInt(hex, 16) >= 0 && parseInt(hex, 16) <= 31) {
+        break;
+      }
+      sChar = String.fromCharCode(parseInt(hex, 16));
+      break;
+  }
+  if (sChar.length === 0) return null;
+  if (escChar === "u") {
+    return [sChar, input.slice(6)];
+  } else {
+    return [sChar, input.slice(2)];
+  }
 }
 
-  if (input[1] === "u") {
-  let hex = input.slice(2,6);
-  if (!hex.match(/[0-9A-Fa-f]{4}/)) {
-    return null;
-  }
-  if (parseInt(hex, 16) >= 0 && parseInt(hex, 16) <= 31) {
-    return [null, input.slice(6)];
-  }
-
-  let char = String.fromCharCode(parseInt(hex, 16));
-    return [char, input.slice(6)];
-  }
-}
-
-let str = fs.readFileSync("data.json","utf8");
+let str = fs.readFileSync("data.json", "utf8");
 // console.log(stringParser(str));
 // console.log('Json.parse:', JSON.parse(str));
 
 const valueParser = input => {
-  return (nullParser(input) || booleanParser(input) || numParser(input) || stringParser(input)); 
+  input = input.trim();
+  return (nullParser(input) || booleanParser(input) || numParser(input) ||
+    stringParser(input) || arrayParser(input));
 }
 // console.log(valueParser(str));
- 
+
 
 const arrayParser = input => {
-  let result = [];
   if (!input.startsWith("[")) {
     return null;
   }
   input = input.slice(1);
-  if (input[0] == ']') {
-    return [result, input.slice(1)];
-  }
-  while (input[0]) {
+  input = input.trim();
+  let result = [];
+  while (input[0] !== ']') {
+    input = input.trim();
     let parsedValue = valueParser(input);
     if (parsedValue === null) {
       return null;
     }
     result.push(parsedValue[0]);
     input = parsedValue[1];
-    if (input[0] === ']') {
-      return [result, input.slice(1)];
+    input = input.trim();
+    if (input[0] === ',') {
+      input = input.slice(1);
+      continue;
     }
-    if (input[0] !== ',') {
+  }
+  return [result, input.slice(1)];
+}
+// console.log(arrayParser('[ 1 , 2 ]abc'));
+
+
+const objectParser = input => {
+  if (!input.startsWith('{')) {
+    return null;
+  }
+  input = input.slice(1);
+  input = input.trim();
+  let result = {};
+  // if (input[0] === '}') {
+  //   return [result, input.slice(1)];
+  // }
+  while (input[0] !== '}') {
+    let parsedString = stringParser(input);
+    if (parsedString === null) {
+      return null;
+    }
+    let key = parsedString[0];
+    input = parsedString[1];
+    if (input[0] !== ':') {
       return null;
     }
     input = input.slice(1);
+    input = input.trim();
+    let parsedValue = valueParser(input);
+    if (parsedValue !== null) {
+      let value = parsedValue[0];
+      input = parsedValue[1];
+      result[key] = value;
     }
+    // if (input[0] === '}') {
+    //   return [result, input.slice(1)];
+    // }
+    if (input[0] === ',') {
+      continue;
+    }
+    return [result, input.slice(1)];
   }
- console.log(arrayParser('[1,]abcd'));
+}
+console.log(objectParser('{ "a" : 1 ,"b" : 2 }abc'));
