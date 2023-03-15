@@ -33,9 +33,7 @@ const stringParser = input => {
   input = input.slice(1);
   let result = '';
   while (input[0] !== '"') {
-    if (input[0].match(/[\u0000-\u001f]/i)) {
-      return null;
-    }
+    if (input[0].match(/[\u0000-\u001f]/i)) return null;
     if (input[0] === "\\") {
       let sChar = specialCharParser(input);
       if (sChar !== null) {
@@ -57,8 +55,8 @@ const specialCharParser = input => {
     case "\\":
       sChar = '\\';
       break;
-    case "\/":
-      sChar = '\/';
+    case "/":
+      sChar = '/';
       break;
     case "b":
       sChar = '\b';
@@ -106,70 +104,47 @@ const valueParser = input => {
 }
 // console.log(valueParser(str));
 
-
 const arrayParser = input => {
-  if (!input.startsWith("[")) {
-    return null;
-  }
-  input = input.slice(1);
-  input = input.trim();
-  let result = [];
+  if (!input.startsWith("[")) return null;
+  input = input.slice(1).trim();
+  const result = [];
   while (input[0] !== ']') {
     input = input.trim();
-    let parsedValue = valueParser(input);
-    if (parsedValue === null) {
-      return null;
-    }
+    const parsedValue = valueParser(input);
+    if (parsedValue === null) return null;
     result.push(parsedValue[0]);
-    input = parsedValue[1];
-    input = input.trim();
+    input = parsedValue[1].trim();
     if (input[0] === ',') {
-      input = input.slice(1);
-      input = input.trim();
-      if (input[0] !== ']') {
-      continue;
-      } else return null;
+      input = input.slice(1).trim();
+      if (input[0] !== ']') continue;
+      else return null;
     } 
   }
   return [result, input.slice(1)];
 }
 // console.log(arrayParser('["	tab	character	in	string	"]'));
 
-
 const objectParser = input => {
   if (!input.startsWith('{')) {
     return null;
   }
-  input = input.slice(1);
-  input = input.trim();
-  let result = {};
+  input = input.slice(1).trim();
+  const result = {};
   while (input[0] !== '}') {
-    let parsedString = stringParser(input);
-    if (parsedString === null) {
-      return null;
-    }
+    const parsedString = stringParser(input);
+    if (parsedString === null) return null;
     let key = parsedString[0];
-    input = parsedString[1];
-    input = input.trim();
-    if (input[0] !== ':') {
-      return null;
-    }
-    input = input.slice(1);
-    input = input.trim();
-    let parsedValue = valueParser(input);
-    if (parsedValue === null) {
-      return null;
-    }
+    input = parsedString[1].trim();
+    if (input[0] !== ':') return null;
+    input = input.slice(1).trim();
+    const parsedValue = valueParser(input);
+    if (parsedValue === null) return null;
     let value = parsedValue[0];
-    input = parsedValue[1];
-    input = input.trim();
+    input = parsedValue[1].trim();
     result[key] = value;
     if (input[0] === ',') {
-      input = input.slice(1);
-      input = input.trim();
-      if (input[0] !== '}') {
-      continue;
-      } 
+      input = input.slice(1).trim();
+      if (input[0] !== '}') continue;
       else return null;
   }
 }
