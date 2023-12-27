@@ -6,48 +6,47 @@ An overview of JSON structure can be found at [json.org](https://www.json.org/js
 
 # Project Overview
 
--- This project contains a JSON parser written in JavaScript.
--- The input is a JSON string, and the output is a parsed javascript value or null
+This project contains a JSON parser written in JavaScript. The input is a JSON string, and the output is a parsed javascript value or null
 in case of a bad JSON.
 
 # Components:
 
--- nullParser
+# nullParser
 
 ```bash
 input : JSON string
 output : [null, rest of the input] or null
 ```
 
--- booleanParser
+# booleanParser
 
 ```bash
 input : JSON string
 output : [boolean, rest of the input] or null
 ```
 
--- numberParser
+# numberParser
 
 ```bash
 input : JSON string
 output : [number, rest of the input] or null
 ```
 
--- stringParser
+# stringParser
 
 ```bash
 input : JSON string
 output : [string, rest of the input] or null
 ```
 
--- arrayParser
+# arrayParser
 
 ```bash
 input : JSON string
 output : [array, rest of the input] or null
 ```
 
--- objectParser
+# objectParser
 
 ```bash
 input : JSON string

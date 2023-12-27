@@ -34,8 +34,6 @@ const stringParser = (input) => {
 
   let result = "";
   while (input[0] !== '"') {
-    if (input[0].match(/[\u0000-\u001f]/i)) return null;
-
     if (input[0] === "\\") {
       let sChar = specialCharParser(input);
 
@@ -97,7 +95,8 @@ const specialCharParser = (input) => {
     return [sChar, input.slice(2)];
   }
 };
-// console.log(stringParser(str));
+// let str = fs.readFileSync("data.json", "utf8");
+// console.log(stringParser('"a\\u001fb"'));
 // console.log('Json.parse:', JSON.parse(str));
 
 const valueParser = (input) => {
