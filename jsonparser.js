@@ -1,41 +1,44 @@
 const fs = require("fs");
 
-const nullParser = input => {
-  if (!input.startsWith('null')) return null
-  return [null, input.slice(4)]
-}
-// console.log(nullParser('nullabcd'));
-// console.log(nullParser('abcdnull'));
+const nullParser = (input) => {
+  if (!input.startsWith("null")) return null;
+  return [null, input.slice(4)];
+};
+// console.log(nullParser("nullabcd"));
+// console.log(nullParser("abcdnull"));
 
-const booleanParser = input => {
-  if (input.startsWith('true')) {
+const booleanParser = (input) => {
+  if (input.startsWith("true")) {
     return [true, input.slice(4)];
   }
-  if (input.startsWith('false')) {
+  if (input.startsWith("false")) {
     return [false, input.slice(5)];
   }
   return null;
-}
+};
 // console.log(booleanParser('abcdtrue'));
 
-const numParser = input => {
+const numParser = (input) => {
   const result = input.match(/^-?([1-9]\d*|0)(\.\d+)?([Ee][+-]?\d+)?/);
   if (result) {
     return [Number(result[0]), input.slice(result[0].length)];
   }
   return null;
-}
-// console.log(numParser('1e-2'));
+};
+// console.log(numParser("1e-2abc"));
 
-
-const stringParser = input => {
+const stringParser = (input) => {
   if (!input.startsWith('"')) return null;
+
   input = input.slice(1);
-  let result = '';
+
+  let result = "";
   while (input[0] !== '"') {
     if (input[0].match(/[\u0000-\u001f]/i)) return null;
+
     if (input[0] === "\\") {
       let sChar = specialCharParser(input);
+
       if (sChar !== null) {
         result += sChar[0];
         input = sChar[1];
@@ -46,32 +49,32 @@ const stringParser = input => {
     }
   }
   return [result, input.slice(1)];
-}
+};
 
-const specialCharParser = input => {
+const specialCharParser = (input) => {
   let escChar = input[1];
-  let sChar = '';
+  let sChar = "";
   switch (escChar) {
     case "\\":
-      sChar = '\\';
+      sChar = "\\";
       break;
     case "/":
-      sChar = '/';
+      sChar = "/";
       break;
     case "b":
-      sChar = '\b';
+      sChar = "\b";
       break;
     case "f":
-      sChar = '\f';
+      sChar = "\f";
       break;
     case "n":
-      sChar = '\n';
+      sChar = "\n";
       break;
     case "t":
-      sChar = '\t';
+      sChar = "\t";
       break;
     case "r":
-      sChar = '\r';
+      sChar = "\r";
       break;
     case '"':
       sChar = '"';
@@ -93,67 +96,87 @@ const specialCharParser = input => {
   } else {
     return [sChar, input.slice(2)];
   }
-}
+};
 // console.log(stringParser(str));
 // console.log('Json.parse:', JSON.parse(str));
 
-const valueParser = input => {
+const valueParser = (input) => {
   input = input.trim();
-  return (nullParser(input) || booleanParser(input) || numParser(input) ||
-    stringParser(input) || arrayParser(input) || objectParser(input));
-}
-// console.log(valueParser(str));
+  return (
+    nullParser(input) ||
+    booleanParser(input) ||
+    numParser(input) ||
+    stringParser(input) ||
+    arrayParser(input) ||
+    objectParser(input)
+  );
+};
+// console.log(valueParser('"1"null123rfg'));
 
-const arrayParser = input => {
+const arrayParser = (input) => {
   if (!input.startsWith("[")) return null;
+
   input = input.slice(1).trim();
+
   const result = [];
-  while (input[0] !== ']') {
+  while (input[0] !== "]") {
     input = input.trim();
+
     const parsedValue = valueParser(input);
+
     if (parsedValue === null) return null;
     result.push(parsedValue[0]);
     input = parsedValue[1].trim();
-    if (input[0] === ',') {
+
+    if (input[0] === ",") {
       input = input.slice(1).trim();
-      if (input[0] !== ']') continue;
+      if (input[0] !== "]") continue;
       else return null;
-    } 
+    }
   }
   return [result, input.slice(1)];
-}
+};
 // console.log(arrayParser('["	tab	character	in	string	"]'));
 
-const objectParser = input => {
-  if (!input.startsWith('{')) {
+const objectParser = (input) => {
+  if (!input.startsWith("{")) {
     return null;
   }
+
   input = input.slice(1).trim();
+
   const result = {};
-  while (input[0] !== '}') {
+  while (input[0] !== "}") {
     const parsedString = stringParser(input);
+
     if (parsedString === null) return null;
+
     let key = parsedString[0];
     input = parsedString[1].trim();
-    if (input[0] !== ':') return null;
+
+    if (input[0] !== ":") return null;
+
     input = input.slice(1).trim();
+
     const parsedValue = valueParser(input);
+
     if (parsedValue === null) return null;
     let value = parsedValue[0];
     input = parsedValue[1].trim();
     result[key] = value;
-    if (input[0] === ',') {
+
+    if (input[0] === ",") {
       input = input.slice(1).trim();
-      if (input[0] !== '}') continue;
+      if (input[0] !== "}") continue;
       else return null;
+    }
   }
-}
-return [result, input.slice(1)];
-}
+  return [result, input.slice(1)];
+};
 // console.log(objectParser('{ "a" : 1 , }abc'));
 
 let str;
-for(let i = 1; i <= 33; i++) {
+for (let i = 1; i <= 33; i++) {
   str = fs.readFileSync(`./tests/fail${i}.json`, "utf8");
   const parsed = valueParser(str);
   if (parsed === null) {
